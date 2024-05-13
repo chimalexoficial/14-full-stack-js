@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import generateId from '../helpers/generateId.js';
+import bcrypt from 'bcrypt';
 
 const vetSchema = mongoose.Schema({
     name: {
@@ -26,7 +28,8 @@ const vetSchema = mongoose.Schema({
         default: null
     },
     token: {
-        type: String
+        type: String,
+        default: generateId()
     },
     confirmed: {
         type: Boolean,
@@ -34,5 +37,17 @@ const vetSchema = mongoose.Schema({
     }
 });
 
-const Vet = mongoose.model('vet', vetSchema);
+vetSchema.pre('save', async function (next) {
+    if (this.isModified('password')) { //if password hashed, dont hash again
+        next(); //next middleware
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+});
+
+vetSchema.methods.checkPassword = async function(passwordForm) {
+    return await bcrypt.compare(passwordForm, this.password);
+}
+
+const Vet = mongoose.model('Vet', vetSchema);
 export default Vet;

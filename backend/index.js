@@ -1,15 +1,16 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectingDB from './config/db.js';
+import vetRoutes from './routes/vetRoutes.js'
 
 const app = express();
+app.use(express.json()) //is to send json as req on postman
 dotenv.config(); //scanning files .env
 
 connectingDB();
 
-app.use('/', (req, res) => {
-    res.send('Hello');
-})
+// default route
+app.use('/api/vets', vetRoutes);
 
 const PORT = process.env.PORT || 4000;
 
